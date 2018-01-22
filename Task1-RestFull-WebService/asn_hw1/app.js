@@ -31,7 +31,9 @@ var app = express();
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -46,6 +48,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Phase 1:  First Routes.
 app.get('/wines', wines.findAll);
 app.get('/wines/:id', wines.findById);
+app.post('/wines/', wines.addWine);
+app.put('/wines/:id', wines.updateWine);
+app.delete('/wines/:id', wines.deleteWine);
 
 /*
  * Phase 2: 
@@ -53,29 +58,29 @@ app.get('/wines/:id', wines.findById);
  * Method: POST URL: /wines  CallBack: wines.addWine
  * Method: PUT URL: /wines/:id  CallBack: wines.updateWine       
  * Method: DELETE URL: /wines/:id  CallBack: wines.deleteWine
-*/
+ */
 
 
 /*
  * Phase 2: 
-  * Uncomment Database Connection Lines
-*/
+ * Uncomment Database Connection Lines
+ */
 //Database Connection
-//mongoose.connect('mongodb://localhost/wines',function(err, res) {  
-//    if(err) {
-//        console.log('ERROR: connecting to Database. ' + err);
-//    }
-//});
-          
+mongoose.connect('mongodb://localhost/wines', function (err, res) {
+  if (err) {
+    console.log('ERROR: connecting to Database. ' + err);
+  }
+});
+
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
