@@ -6,8 +6,8 @@
  *    Actividad 1: Diseño de un WebService         *
  *    Codigo Base: Alvaro Parres (parres@iteso.mx) * 
  *                                                 * 
- *    Alumno: <COMPLETAR SU NOMBRE>                *
- *    Exp: <Numero_de_Expediente>                  *
+ *    Alumno: Saúl Enrique Ponce Razo              *
+ *    Exp: is699399                                *
  *                                                 *
  ***************************************************
  *                                                 *
