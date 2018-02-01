@@ -1,0 +1,25 @@
+extends layout
+
+block content
+  h1 Welcome to S3 Client
+  h2 List of Objects in #{bucket}
+  
+  table
+    tr
+        td
+            h3  Key
+        td
+            h3  Last Modified
+        td
+            h3  ETag
+        td
+            h3  Size
+        td
+            h3  Storage Class
+    each object in objects
+            tr
+                td #[a(href='/#{bucket}/#{object.Key}') #{object.Key}]
+                td= object.LastModified
+                td= object.ETag
+                td= object.Size
+                td= object.StorageClass

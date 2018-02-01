@@ -1,14 +1,15 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to S3 Client
-  p List of Buckets
+  h1 Welcome to S3 Client
+  h2 List of Buckets
   
   table
     tr
-        td Name
-        td View
+        td
+            h3 Name
+        td
+            h3 View
     each bucket in buckets
         tr
             td= bucket.Name

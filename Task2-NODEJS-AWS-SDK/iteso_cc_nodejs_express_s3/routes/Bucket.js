@@ -13,30 +13,34 @@ router.get('/', function(req, res) {
           throw err;
       }
       console.log(data);
-      res.render('listBuckets', { buckets: data.Buckets});
+      res.render('listBuckets', { buckets: data.Buckets });
   });
 });
 
-router.get('/:bucket/', function(req, res) {
-
-    /*
-     * @TODO - Programa la logica para obtener los objetos de un bucket.
-     *         Se debe tambien generar una nueblo templade en jade para presentar
-     *         esta información. Similar al que lista los Buckets.
-     */
-    
+router.get('/:bucket/', async function(req, res) {
+    try {
+        const params = {
+            Bucket: req.params.bucket
+        }
+        let objects = await s3.listObjectsV2(params).promise()
+        res.render('listObjects', { objects: objects.Contents, bucket: req.params.bucket })
+    } catch (error) {
+        res.status(500).send()
+    }
 });
 
-router.get('/:bucket/:key', function(req, res) {
-    
-    /*
-     * @TODO - Programa la logica para obtener un objeto en especifico
-     * es importante a la salida enviar el tipo de respuesta y el contenido
-     * 
-     * Ejemplo de esto:
-     *     res.type(...) --> String de content-type
-     *     res.send(...) --> Buffer con los datos.
-     */    
+router.get('/:bucket/:key', async function(req, res) {
+    try {
+        const params = {
+            Bucket: req.params.bucket,
+            Key: req.params.key
+        }
+        let data = await s3.getObject(params).promise()
+        res.type(data.ContentType)
+        res.send(new Buffer(data.Body, 'binary'))
+    } catch (error) {
+        res.status(500).send()
+    }
 });
 
 
