@@ -3,6 +3,8 @@ extends layout
 block content
   h1 Welcome to S3 Client
   h2 List of Objects in #{bucket}
+  input(type="file" placeholder="Name" id="new-object")
+  button(id="submit-object") Add File
   
   table
     tr

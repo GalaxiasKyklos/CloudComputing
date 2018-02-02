@@ -2,7 +2,9 @@ extends layout
 
 block content
   h1 Welcome to S3 Client
-  h2 List of Buckets
+  h2 List of 
+  input(type="text" placeholder="Name" id="new-bucket")
+  button(id="submit-bucket") Add Bucket
   
   table
     tr
@@ -14,4 +16,3 @@ block content
         tr
             td= bucket.Name
             td #[a(href='/#{bucket.Name}/') View]
-
