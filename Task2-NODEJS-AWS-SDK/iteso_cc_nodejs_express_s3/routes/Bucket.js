@@ -7,29 +7,33 @@ var fileUpload = require('express-fileupload');
 router.use(fileUpload());
 
 
-router.get('/', function(req, res) {
-  s3.listBuckets({},function(err,data) {
-      if(err) {
-          throw err;
-      }
-      console.log(data);
-      res.render('listBuckets', { buckets: data.Buckets });
-  });
+router.get('/', function (req, res) {
+    s3.listBuckets({}, function (err, data) {
+        if (err) {
+            throw err;
+        }
+        res.render('listBuckets', {
+            buckets: data.Buckets
+        });
+    });
 });
 
-router.get('/:bucket/', async function(req, res) {
+router.get('/:bucket/', async (req, res) => {
     try {
         const params = {
             Bucket: req.params.bucket
         }
         let objects = await s3.listObjectsV2(params).promise()
-        res.render('listObjects', { objects: objects.Contents, bucket: req.params.bucket })
+        res.render('listObjects', {
+            objects: objects.Contents,
+            bucket: req.params.bucket
+        })
     } catch (error) {
         res.status(500).send()
     }
 });
 
-router.get('/:bucket/:key', async function(req, res) {
+router.get('/:bucket/:key', async (req, res) => {
     try {
         const params = {
             Bucket: req.params.bucket,
@@ -44,28 +48,36 @@ router.get('/:bucket/:key', async function(req, res) {
 });
 
 
-router.post('/', function(req,res) {
-    /*
-     * @TODO - Programa la logica para crear un Bucket.
-    */
+router.post('/', async (req, res) => {
+    try {
+        const params = req.body.params
+        console.log(params)
+        await s3.createBucket(params).promise()
+        res.status(201).send()
+    } catch (error) {
+        res.status(304).send()
+    }
 });
 
-router.post('/:bucket', function(req,res) {
-
-    /*
-     * @TODO - Programa la logica para crear un nuevo objeto.
-     * TIPS:
-     *  req.files contiene todo los archivos enviados mediante post.
-     *  cada elemento de files contiene multiple información algunos campos
-     *  importanets son:
-     *      data -> Buffer con los datos del archivo.
-     *      name -> Nombre del archivo original
-     *      mimetype -> tipo de archivo.
-     *  el conjunto files dentro del req es generado por el modulo 
-     *  express-fileupload
-     *  
-    */
-     
+router.post('/:bucket', async (req, res) => {
+    try {
+        const bucketName = req.params.bucket
+        const fileKey = req.files.newFile.name
+        const binaryFile = req.files.newFile.data
+        params = {
+            Bucket: bucketName,
+            Key: fileKey,
+            Body: binaryFile
+        }
+        const binaryFileCreated = await s3.putObject(params).promise()
+        if (binaryFileCreated) {
+            res.status(201).send()
+        } else {
+            res.status(304).send()
+        }
+    } catch (error) {
+        res.status(304).send()
+    }
 });
 
 module.exports = router;
