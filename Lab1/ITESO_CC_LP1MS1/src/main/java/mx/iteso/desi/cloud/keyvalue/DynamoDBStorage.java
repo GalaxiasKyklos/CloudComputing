@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
@@ -49,6 +50,7 @@ public class DynamoDBStorage extends BasicKeyValueStore {
     public Set<String> get(String search) {
         Set<String> result = new HashSet<>();
         Table table = dynamoDB.getTable(this.dbName);
+        System.out.println("Query for item");
 
         QuerySpec spec = new QuerySpec().withKeyConditionExpression("keyword = :v_keyword")
                 .withValueMap(new ValueMap().withString(":v_keyword", search));
@@ -66,14 +68,21 @@ public class DynamoDBStorage extends BasicKeyValueStore {
 
     @Override
     public boolean exists(String search) {
-        Table table = dynamoDB.getTable(this.dbName);
+        System.out.println("Query for item");
+        if (this.items.isEmpty()) {
+            Table table = dynamoDB.getTable(this.dbName);
 
-        QuerySpec spec = new QuerySpec().withKeyConditionExpression("keyword = :v_keyword")
-                .withValueMap(new ValueMap().withString(":v_keyword", search));
+            QuerySpec spec = new QuerySpec().withKeyConditionExpression("keyword = :v_keyword")
+                    .withValueMap(new ValueMap().withString(":v_keyword", search));
 
-        ItemCollection<QueryOutcome> items = table.query(spec);
+            ItemCollection<QueryOutcome> items = table.query(spec);
 
-        return items.getAccumulatedItemCount() > 0;
+            return items.getAccumulatedItemCount() > 0;
+        } else {
+            boolean ret = this.items.parallelStream().anyMatch(item -> item.getString("keyword").equals(search));
+            System.out.println(ret);
+            return ret;
+        }
     }
 
     @Override
@@ -157,29 +166,28 @@ public class DynamoDBStorage extends BasicKeyValueStore {
         if (!this.items.isEmpty()) {
             try {
                 System.out.println("**PUTTING ITEMS**");
-                Set<Item> subset = new HashSet<>();
-                for (Item item : this.items) {
-                    subset.add(item);
-                    if (subset.size() == 25) {
-                        TableWriteItems tableItems = new TableWriteItems(this.dbName).withItemsToPut(subset);
+                Set<Item> subset;
+                int cont = 0;
+                while (cont < this.items.size()) {
+                    subset = this.items.parallelStream().skip(cont).limit(25).collect(Collectors.toSet());
+                    cont += 25;
+                    TableWriteItems tableItems = new TableWriteItems(this.dbName).withItemsToPut(subset);
 
-                        System.out.println("Making the request.");
-                        BatchWriteItemOutcome outcome = this.dynamoDB.batchWriteItem(tableItems);
+                    System.out.println("Making the request.");
+                    BatchWriteItemOutcome outcome = this.dynamoDB.batchWriteItem(tableItems);
 
-                        do {
-                            // Check for unprocessed keys which could happen if you exceed
-                            // provisioned throughput
-                            Map<String, List<WriteRequest>> unprocessedItems = outcome.getUnprocessedItems();
+                    do {
+                        // Check for unprocessed keys which could happen if you exceed
+                        // provisioned throughput
+                        Map<String, List<WriteRequest>> unprocessedItems = outcome.getUnprocessedItems();
 
-                            if (outcome.getUnprocessedItems().size() == 0) {
-                                System.out.println("No unprocessed items found");
-                            } else {
-                                System.out.println("Writting unprocessed items");
-                                outcome = this.dynamoDB.batchWriteItemUnprocessed(unprocessedItems);
-                            }
-                        } while (outcome.getUnprocessedItems().size() > 0);
-                        subset = new HashSet<>();
-                    }
+                        if (outcome.getUnprocessedItems().size() == 0) {
+                            System.out.println("No unprocessed items found");
+                        } else {
+                            System.out.println("Writting unprocessed items");
+                            outcome = this.dynamoDB.batchWriteItemUnprocessed(unprocessedItems);
+                        }
+                    } while (outcome.getUnprocessedItems().size() > 0);
                 }
             } catch (Exception e) {
                 System.err.println("Failed to retrieve items: ");
