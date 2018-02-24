@@ -13,13 +13,20 @@
    * Initialize the tables
    * 
    */
-  keyvaluestore.prototype.init = function(whendone) {
+  keyvaluestore.prototype.init = async function(whendone) {
     
     var tableName = this.tableName;
     var self = this;
-    
-    
-    whendone(); //Call Callback function.
+    var params = {
+        TableName: tableName /* required */
+    };
+
+    try {
+      const table = await dynamodb.describeTable(params).promise();
+      whendone(); //Call Callback function.
+    } catch (e) {
+
+    }
   };
 
   /**
@@ -30,7 +37,7 @@
    * Callback returns a list of objects with keys "inx" and "value"
    */
   
-keyvaluestore.prototype.get = function(search, callback) {
+keyvaluestore.prototype.get = async function(search, callback) {
     var self = this;
     
     if (self.cache.get(search))
@@ -49,6 +56,25 @@ keyvaluestore.prototype.get = function(search, callback) {
        *    self.cache.set(search, items)
        *    callback(err, items);
        */
+      var docClient = new AWS.DynamoDB.DocumentClient();
+
+      var params = {
+          TableName : this.tableName,
+          KeyConditionExpression: "#k = :v_keyword",
+          ExpressionAttributeNames:{
+              "#k": "keyword"
+          },
+          ExpressionAttributeValues: {
+              ":v_keyword": search
+          }
+      };
+
+      try {
+        const items = await docClient.query(params).promise();
+        callback(false, items);
+      } catch (err) {
+        callback(err, null);
+      }
     }
   };
 

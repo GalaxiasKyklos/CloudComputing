@@ -45,18 +45,18 @@ app.get('/search/:word', function(req, res) {
       if (err) {
         console.log("getAttributes() failed: "+err);
         callback(err.toString(), imageurls);
-      } else if (data == null) {
-        console.log("getAttributes() returned no results");
-        callback(undefined, imageurls);
       } else {
-  	    async.forEach(data, function(attribute, callback) { 
-                images.get(attribute.value, function(err, data){
-                    if (err) {
-                        console.log(err);
-                    }
-                    imageurls.push(data[0].value);
-                    callback();
-                 });
+  	    async.forEach(data.Items, function(attribute, cb) {
+          images.get(attribute.value, function(err, data){
+              if (err) {
+                  console.log(err);
+              } else {
+                if (data.Count > 0) {
+                  imageurls.push(data.Items[0].value);
+                }
+                cb();
+              }
+            });
           }, function() {
             callback(undefined, imageurls);
           });
