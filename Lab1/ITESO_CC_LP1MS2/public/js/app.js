@@ -67,7 +67,6 @@ $(document).ready(function() {
       $(i).empty();
     });
     results.slice(page * 4, page * 4 + 4).map((r, i) => {
-      $('#photo' + i).empty();
       $('#photo' + i).append(r);
     });
    }
