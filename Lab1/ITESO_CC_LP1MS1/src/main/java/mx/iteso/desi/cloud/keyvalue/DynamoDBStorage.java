@@ -68,7 +68,6 @@ public class DynamoDBStorage extends BasicKeyValueStore {
 
     @Override
     public boolean exists(String search) {
-        System.out.println("Query for item");
         if (this.items.isEmpty()) {
             Table table = dynamoDB.getTable(this.dbName);
 
@@ -79,9 +78,7 @@ public class DynamoDBStorage extends BasicKeyValueStore {
 
             return items.getAccumulatedItemCount() > 0;
         } else {
-            boolean ret = this.items.parallelStream().anyMatch(item -> item.getString("keyword").equals(search));
-            System.out.println(ret);
-            return ret;
+            return this.items.parallelStream().anyMatch(item -> item.getString("keyword").equals(search));
         }
     }
 
@@ -164,16 +161,17 @@ public class DynamoDBStorage extends BasicKeyValueStore {
 
     private void addAllItems() {
         if (!this.items.isEmpty()) {
+            System.out.println(this.items.size());
             try {
                 System.out.println("**PUTTING ITEMS**");
                 Set<Item> subset;
                 int cont = 0;
                 while (cont < this.items.size()) {
-                    subset = this.items.parallelStream().skip(cont).limit(25).collect(Collectors.toSet());
+                    subset = this.items.stream().skip(cont).limit(25).collect(Collectors.toSet());
                     cont += 25;
                     TableWriteItems tableItems = new TableWriteItems(this.dbName).withItemsToPut(subset);
 
-                    System.out.println("Making the request.");
+                    System.out.println("Making the request. " + cont);
                     BatchWriteItemOutcome outcome = this.dynamoDB.batchWriteItem(tableItems);
 
                     do {
