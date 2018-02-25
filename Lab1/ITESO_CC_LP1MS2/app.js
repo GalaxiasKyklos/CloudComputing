@@ -22,53 +22,66 @@ app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 
-app.use(function(req, res, next) {
-    res.setHeader("Cache-Control", "no-cache must-revalidate");
-    next();
+app.use(function (req, res, next) {
+  res.setHeader("Cache-Control", "no-cache must-revalidate");
+  next();
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-app.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+app.get('/', function (req, res, next) {
+  res.render('index', {
+    title: 'Express'
+  });
 });
 
-app.get('/search/:word', function(req, res) {
+app.get('/search/:word', function (req, res) {
+  this.LRU = require("lru-cache");
+  this.cache = this.LRU({ max: 500 });
   var stemmedword = stemmer(req.params.word).toLowerCase(); //stem the word
-  console.log("Stemmed word: "+stemmedword);
-  
-  var imageurls = new Array(); 
-  
-  var processData = function(callback) {
-      terms.get(stemmedword, function(err, data) {
+  console.log("Stemmed word: " + stemmedword);
+
+  var imageurls = new Array();
+
+  var processData = function (callback) {
+    terms.get(stemmedword, function (err, data) {
       if (err) {
-        console.log("getAttributes() failed: "+err);
+        console.log("getAttributes() failed: " + err);
         callback(err.toString(), imageurls);
       } else {
-  	    async.forEach(data.Items, function(attribute, cb) {
-          images.get(attribute.value, function(err, data){
-              if (err) {
-                  console.log(err);
-              } else {
-                if (data.Count > 0) {
-                  imageurls.push(data.Items[0].value);
-                }
-                cb();
+        async.forEach(data.Items, function (attribute, cb) {
+          images.get(attribute.value, function (err, data) {
+            if (err) {
+              console.log(err);
+            } else {
+              if (data.Count > 0) {
+                imageurls.push(data.Items[0].value);
+                this.cache.set(stemmedword, data.Items[0].value);
               }
-            });
-          }, function() {
-            callback(undefined, imageurls);
+              cb();
+            }
           });
-     }
+        }, function () {
+          callback(undefined, imageurls);
+        });
+      }
     });
   };
 
-  processData(function(err, queryresults) {
+  processData(function (err, queryresults) {
     if (err) {
-      res.send(JSON.stringify({results: undefined, num_results: 0, error: err}));
+      res.send(JSON.stringify({
+        results: undefined,
+        num_results: 0,
+        error: err
+      }));
     } else {
-      res.send(JSON.stringify({results: queryresults, num_results: queryresults.length, error: undefined}));
+      res.send(JSON.stringify({
+        results: queryresults,
+        num_results: queryresults.length,
+        error: undefined
+      }));
     }
   });
 });
@@ -78,14 +91,14 @@ var images = new dynamoDbTable('images');
 var terms = new dynamoDbTable('terms');
 
 images.init(
-    function(){
-        terms.init(
-            function(){
-                console.log("Images Storage Starter");
-            }
-        )
-        console.log("Terms Storage Starter");
-    }    
+  function () {
+    terms.init(
+      function () {
+        console.log("Images Storage Starter");
+      }
+    )
+    console.log("Terms Storage Starter");
+  }
 );
 
 module.exports = app;

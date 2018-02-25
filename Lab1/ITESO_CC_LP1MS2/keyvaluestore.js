@@ -5,7 +5,9 @@
 
   function keyvaluestore(table) {
     this.LRU = require("lru-cache");
-    this.cache = this.LRU({ max: 500 });
+    this.cache = this.LRU({
+      max: 500
+    });
     this.tableName = table;
   };
 
@@ -13,12 +15,12 @@
    * Initialize the tables
    * 
    */
-  keyvaluestore.prototype.init = async function(whendone) {
-    
+  keyvaluestore.prototype.init = async function (whendone) {
+
     var tableName = this.tableName;
     var self = this;
     var params = {
-        TableName: tableName /* required */
+      TableName: tableName /* required */
     };
 
     try {
@@ -36,14 +38,16 @@
    * 
    * Callback returns a list of objects with keys "inx" and "value"
    */
-  
-keyvaluestore.prototype.get = async function(search, callback) {
+
+  keyvaluestore.prototype.get = async function (search, callback) {
     var self = this;
-    
-    if (self.cache.get(search))
-          callback(null, self.cache.get(search));
-    else {
-        
+    const { stemmer } = require('porter-stemmer');
+    const stemmedword = stemmer(search).toLowerCase(); 
+    if (self.cache.get(stemmedword)) {
+      console.log('Cached value');
+      callback(null, self.cache.get(stemmedword));
+    } else {
+
       /*
        * 
        * La función QUERY debe generar un arreglo de objetos JSON son cada
@@ -59,14 +63,14 @@ keyvaluestore.prototype.get = async function(search, callback) {
       var docClient = new AWS.DynamoDB.DocumentClient();
 
       var params = {
-          TableName : this.tableName,
-          KeyConditionExpression: "#k = :v_keyword",
-          ExpressionAttributeNames:{
-              "#k": "keyword"
-          },
-          ExpressionAttributeValues: {
-              ":v_keyword": search
-          }
+        TableName: this.tableName,
+        KeyConditionExpression: "#k = :v_keyword",
+        ExpressionAttributeNames: {
+          "#k": "keyword"
+        },
+        ExpressionAttributeValues: {
+          ":v_keyword": search
+        }
       };
 
       try {
