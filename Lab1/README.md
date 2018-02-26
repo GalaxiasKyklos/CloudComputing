@@ -19,3 +19,7 @@
 
 - `/Lab1/ITESO_CC_LP1MS2/public/js/app.js`
   - Has the logic to update the modal images and hide / show the previous and next buttons.
+
+
+### Functional in the cloud
+- https://youtu.be/wjt-NUloW0c
