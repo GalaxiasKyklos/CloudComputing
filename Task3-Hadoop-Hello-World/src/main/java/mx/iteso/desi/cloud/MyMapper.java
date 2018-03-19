@@ -14,7 +14,7 @@ public class MyMapper extends Mapper<Object, Text, Text, IntWritable> {
     StringTokenizer itr = new StringTokenizer(value.toString());
 
     while (itr.hasMoreTokens()) {
-      word.set(itr.nextToken().replaceAll("\\W", ""));
+      word.set(itr.nextToken().replaceAll("\\W", "").toLowerCase());
       context.write(word, new IntWritable(1));
     }
   }
