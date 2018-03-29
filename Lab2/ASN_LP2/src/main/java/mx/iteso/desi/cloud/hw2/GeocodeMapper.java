@@ -34,7 +34,7 @@ public class GeocodeMapper extends Mapper<LongWritable, Text, Text, GeocodeWrita
     cities.add(new City("Philadelphia", 39.88, -75.25));
     cities.add(new City("Houston", 29.97, -95.35));
     cities.add(new City("Seattle", 47.45, -122.30));
-    cities.add(new City("Guadalajara", 20.66, 103.39));
+    cities.add(new City("Guadalajara", 20.66, -103.39));
     cities.add(new City("Monterrey", 25.67, -100.31));
   }
 
@@ -66,11 +66,11 @@ public class GeocodeMapper extends Mapper<LongWritable, Text, Text, GeocodeWrita
     }
   }
 
-  private static boolean inCitiesRadii(Geocode g) {
-    return cities.stream().anyMatch(c -> g.getHaversineDistance(c.lat, c.lon) <= 5000);
+  private static boolean inCitiesRadii(Geocode geocode) {
+    return cities.stream().anyMatch(c -> geocode.getHaversineDistance(c.lat, c.lon) <= 5000);
     // for (City c : cities) {
-    //   double distInMeters = g.getHaversineDistance(c.lat, c.lon);
-    //   if(distInMeters <= 5000)
+    //   double distance = geocode.getHaversineDistance(c.lat, c.lon);
+    //   if(distance <= 5000)
     //     return true;
     // }
     // return false;

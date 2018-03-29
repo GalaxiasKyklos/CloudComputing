@@ -22,11 +22,11 @@ public class GeocodeReducer extends Reducer<Text, GeocodeWritable, Text, Text> {
     }
 
     if (inCitiesRadii) {
-      String coordsToString = String.format("(%f, %f)", coordinates[0], coordinates[1]);
+      String coordsString = String.format("(%f,%f)", coordinates[0], coordinates[1]);
       for (GeocodeWritable value : values) {
         if (!value.getName().toString().equals("geocode")) {
-          String catAndURL = String.format("%s\t%s", key.toString(), value.getName().toString());
-          context.write(new Text(coordsToString), new Text(catAndURL));
+          String catURL = String.format("%s\t%s", key.toString(), value.getName().toString());
+          context.write(new Text(coordsString), new Text(catURL));
         }
       }
     }
