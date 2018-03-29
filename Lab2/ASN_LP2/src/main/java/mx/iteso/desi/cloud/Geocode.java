@@ -43,9 +43,9 @@ public class Geocode {
     double dLng = (lon2 - lon1);
     double dLat = (lat2 - lat1);
         
-    double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    double a = Math.sin(dLat/2d) * Math.sin(dLat/2d) +
                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-               Math.sin(dLng/2) * Math.sin(dLng/2);
+               Math.sin(dLng/2d) * Math.sin(dLng/2d);
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     double km = earthRadius * c;
         

@@ -18,7 +18,7 @@ public class GeocodeDriver {
     }
 
     Configuration conf = new Configuration();
-    Job job = Job.getInstance(conf, "Geocode MapReduce");
+    Job job = Job.getInstance(conf, "GeocodeMapReduce");
     job.setJarByClass(GeocodeDriver.class);
     job.setMapperClass(GeocodeMapper.class);
     job.setReducerClass(GeocodeReducer.class);

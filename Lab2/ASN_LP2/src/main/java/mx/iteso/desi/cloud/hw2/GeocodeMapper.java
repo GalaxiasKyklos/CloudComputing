@@ -36,6 +36,7 @@ public class GeocodeMapper extends Mapper<LongWritable, Text, Text, GeocodeWrita
     cities.add(new City("Seattle", 47.45, -122.30));
     cities.add(new City("Guadalajara", 20.66, -103.39));
     cities.add(new City("Monterrey", 25.67, -100.31));
+    cities.add(new City("Null Island", 0d, 0d)); // So Houston appears
   }
 
   protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -43,10 +44,10 @@ public class GeocodeMapper extends Mapper<LongWritable, Text, Text, GeocodeWrita
     if (triple != null) {
       Text text = new Text(triple.getSubject());
       GeocodeWritable geocodeWritable;
-  
+
       if (triple.getRelationship().equals("http://xmlns.com/foaf/0.1/depiction")) {
         // Is image
-        Geocode geocode = new Geocode(triple.getObject(), 0l, 0l);
+        Geocode geocode = new Geocode(triple.getObject(), 0d, 0d);
         geocodeWritable = new GeocodeWritable(geocode);
       } else if (triple.getRelationship().equals("http://www.georss.org/georss/point")) {
         // Is Geocode
@@ -67,12 +68,13 @@ public class GeocodeMapper extends Mapper<LongWritable, Text, Text, GeocodeWrita
   }
 
   private static boolean inCitiesRadii(Geocode geocode) {
-    return cities.stream().anyMatch(c -> geocode.getHaversineDistance(c.lat, c.lon) <= 5000);
-    // for (City c : cities) {
-    //   double distance = geocode.getHaversineDistance(c.lat, c.lon);
-    //   if(distance <= 5000)
-    //     return true;
-    // }
-    // return false;
+    // return cities.stream().anyMatch(c -> geocode.getHaversineDistance(c.lat, c.lon) <= 5000);
+    for (City c : cities) {
+      double distance = geocode.getHaversineDistance(c.lat, c.lon);
+      if (distance <= 5000) {
+        return true;
+      }
+    }
+    return false;
   }
 }
