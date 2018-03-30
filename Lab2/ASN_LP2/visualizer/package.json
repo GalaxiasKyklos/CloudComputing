@@ -4,14 +4,15 @@
   "description": "",
   "main": "visualizer.js",
   "scripts": {
-    "start": "nodemon visualizer", 
+    "start": "nodemon visualizer",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "express": "~3.3.5",
+    "aws-sdk": "^2.217.1",
     "ejs": "*",
+    "express": "~3.3.5",
     "geohash": "*"
   }
 }

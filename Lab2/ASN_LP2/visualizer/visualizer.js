@@ -1,6 +1,8 @@
 var express = require("express")
 var app = express()
-fs = require('fs')
+// fs = require('fs')
+var AWS = require('aws-sdk');
+var s3 = new AWS.S3();
 
 var geoData
 
@@ -9,20 +11,36 @@ var geoData
 // in the file, which we then remember in the 'geoData' variable. Error 34
 // is 'file not found'.
 
-fs.readFile('../../results/part-r-00000', 'utf8', function (err, data) {
-  if (err) {
-    if (err.errno == 34) {
-      console.log("Cannot find the file 'part-r-00000' - did you copy it from ")
-      console.log("your 'output' directory to the current directory?")
-      console.log("Try running 'cp ../../results/part-r-00000 .'")
-      process.exit(1)
-    }
+// fs.readFile('../../results/part-r-00000', 'utf8', function (err, data) {
+//   if (err) {
+//     if (err.errno == 34) {
+//       console.log("Cannot find the file 'part-r-00000' - did you copy it from ")
+//       console.log("your 'output' directory to the current directory?")
+//       console.log("Try running 'cp ../../results/part-r-00000 .'")
+//       process.exit(1)
+//     }
 
-    console.log("Cannot read from 'part-r-00000': " + err)
-    process.exit(1)
+//     console.log("Cannot read from 'part-r-00000': " + err)
+//     process.exit(1)
+//   }
+//   geoData = data
+// })
+
+const getGeoData = async (params) => {
+  try {
+    const response = await s3.getObject(params).promise()
+    geoData = response.Body.toString('utf8')
+  } catch (e) {
+    console.error(e)
   }
-  geoData = data
-})
+}
+
+const params = {
+  Bucket: 'is699399-hadoop-geocode',
+  Key: 'results/part-r-00000',
+}
+
+getGeoData(params)
 
 // The line below tells Node to include a special header in the response that 
 // tells the browser not to cache any files. That way, you do not need to 
