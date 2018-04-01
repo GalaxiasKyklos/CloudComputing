@@ -1,5 +1,10 @@
 package mx.iteso.desi.cloud.hw3;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import mx.iteso.desi.vision.ImagesMatUtils;
 import mx.iteso.desi.vision.WebCamStream;
 import org.opencv.core.Mat;
 
@@ -105,15 +110,26 @@ public class FaceAddFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-        // TODO
+        webCam.startStream(photoPanel);
+        stopButton.setEnabled(true);
+        startButton.setEnabled(false);
+        uploadButton.setEnabled(false);
     }//GEN-LAST:event_startButtonActionPerformed
 
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
-        // TODO
+        lastFrame = webCam.stopStream();
+        startButton.setEnabled(true);
+        stopButton.setEnabled(false);
+        uploadButton.setEnabled(true);
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void uploadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadButtonActionPerformed
-        // TODO
+        try {
+            InputStream image = ImagesMatUtils.MatToInputStream(lastFrame);
+            S3.putObject(this.nameTextField.getText()+".jpg", image, image.available());
+        } catch (IOException ex) {
+            Logger.getLogger(FaceAddFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_uploadButtonActionPerformed
 
     private void closeWindow(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeWindow

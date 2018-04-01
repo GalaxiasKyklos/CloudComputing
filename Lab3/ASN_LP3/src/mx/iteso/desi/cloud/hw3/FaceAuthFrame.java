@@ -1,5 +1,11 @@
 package mx.iteso.desi.cloud.hw3;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import mx.iteso.desi.vision.ImagesMatUtils;
 import mx.iteso.desi.vision.WebCamStream;
 import org.opencv.core.Mat;
 
@@ -7,17 +13,18 @@ public class FaceAuthFrame extends javax.swing.JFrame {
 
     WebCamStream webCam;
     Mat lastFrame;
-    
+
     public FaceAuthFrame() {
         this.webCam = new WebCamStream(0);
         initComponents();
         startCam();
     }
-    
+
     private void startCam() {
         this.webCam.startStream(this.photoPanel);
         this.authButton.setEnabled(true);
     }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -83,20 +90,31 @@ public class FaceAuthFrame extends javax.swing.JFrame {
         this.lastFrame = webCam.stopStream();
         this.authButton.setEnabled(false);
         Face f = this.doAuthLogic();
-        if(f.name.isEmpty()) {
+        if (f.name.isEmpty()) {
             this.nameTextField.setText("Not Match");
         } else {
-            this.nameTextField.setText(f.name+"("+f.cofidence+")");
+            this.nameTextField.setText(f.name + "(" + f.cofidence + ")");
         }
     }//GEN-LAST:event_authButtonActionPerformed
 
     private Face doAuthLogic() {
-        // TODO
         Face face = null;
-        
+        InputStream image = ImagesMatUtils.MatToInputStream(lastFrame);
+        AWSFaceCompare awsFaceCompare = new AWSFaceCompare(ConfigSecret.AWS_ACCESS_KEY_ID, ConfigSecret.AWS_SECRET_ACCESS_KEY, Config.amazonRegion, Config.srcBucket);
+
+        try {
+            byte[] bufferedImage = new byte[image.available()];
+            image.read(bufferedImage);
+            ByteBuffer toCompare;
+            toCompare = ByteBuffer.wrap(bufferedImage);
+            face = awsFaceCompare.compare(toCompare);
+        } catch (IOException ex) {
+            Logger.getLogger(FaceAuthFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         return face;
     }
-    
+
     private void closeWindow(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeWindow
         webCam.stopStream();
     }//GEN-LAST:event_closeWindow

@@ -13,7 +13,5 @@ import com.amazonaws.regions.Regions;
  */
 public class Config {
   public static final Regions amazonRegion = Regions.US_WEST_2;
-  
-  public static final String srcBucket = "";
-      
+  public static final String srcBucket = "is699399-aws-face-recognition";
 }
