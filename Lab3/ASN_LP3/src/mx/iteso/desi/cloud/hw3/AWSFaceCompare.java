@@ -19,14 +19,10 @@ import com.amazonaws.services.rekognition.model.S3Object;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-/**
- *
- * @author parres
- */
 public class AWSFaceCompare {
 
     String srcBucket;
-    AmazonRekognition arek;
+    AmazonRekognition rekognition;
     String accessKey;
     String secretKey;
     Regions region;
@@ -39,11 +35,11 @@ public class AWSFaceCompare {
         this.region = region;
 
         AWSCredentialsProvider credProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey));
-        arek = AmazonRekognitionClientBuilder.standard().withCredentials(credProvider).withRegion(region).build();
+        rekognition = AmazonRekognitionClientBuilder.standard().withCredentials(credProvider).withRegion(region).build();
     }
 
     public Face compare(ByteBuffer imageBuffer) {
-        Face bestFace = new Face("", 0f);
+        Face finalFace = new Face("", 0f);
 
         List<String> names = S3.listFiles();
         names.stream().filter((name) -> !(!name.endsWith(".jpg"))).forEachOrdered((String name) -> {
@@ -52,14 +48,14 @@ public class AWSFaceCompare {
                     .withTargetImage(new Image().withS3Object(
                             new S3Object().withBucket(srcBucket).withName(name)));
 
-            CompareFacesResult result = arek.compareFaces(compareFaceReq);
-            result.getFaceMatches().stream().filter((match) -> (match.getSimilarity() > bestFace.getCofidence())).forEachOrdered((match) -> {
-                bestFace.name = name;
-                bestFace.cofidence = match.getSimilarity();
+            CompareFacesResult result = rekognition.compareFaces(compareFaceReq);
+            result.getFaceMatches().stream().filter((match) -> (match.getSimilarity() > finalFace.getCofidence())).forEachOrdered((match) -> {
+                finalFace.name = name;
+                finalFace.cofidence = match.getSimilarity();
             });
         });
 
-        return bestFace;
+        return finalFace;
     }
 
 }
