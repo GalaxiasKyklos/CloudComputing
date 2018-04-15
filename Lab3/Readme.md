@@ -17,4 +17,4 @@
     - `uploadButtonActionPerformed` this one uses the S3 utility class
 - `FaceAuthFrame` implemented:
     - `doAuthLogic` Uses `AWSFaceCompare` to use AWS Rekognition
-- `AWSFaceCompare` has a `compare` methos, it uses the S3 utitlity class to list the S3 objects and check if there is a match using AWS Rekognition
+- `AWSFaceCompare` has a `compare` method, it uses the S3 utitlity class to list the S3 objects and check if there is a match using AWS Rekognition
